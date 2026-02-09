@@ -652,4 +652,175 @@
             createProgressDots();
             attachEventListeners();
             
-            </index.html>
+         isInitialized = true;
+            console.log('Initialization complete');
+        }
+
+        // Create floating hearts
+        function createHearts() {
+            const container = document.getElementById('hearts');
+            const hearts = ['💙', '✨', '💎', '🌟', '💠'];
+            
+            for (let i = 0; i < 15; i++) {
+                const heart = document.createElement('div');
+                heart.className = 'heart';
+                heart.textContent = hearts[Math.floor(Math.random() * hearts.length)];
+                heart.style.left = Math.random() * 100 + '%';
+                heart.style.fontSize = (Math.random() * 15 + 15) + 'px';
+                heart.style.animationDuration = (Math.random() * 10 + 12) + 's';
+                heart.style.animationDelay = Math.random() * 15 + 's';
+                container.appendChild(heart);
+            }
+        }
+
+        // Create sparkles
+        function createSparkles() {
+            const container = document.getElementById('sparkles');
+            for (let i = 0; i < 30; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.className = 'sparkle';
+                sparkle.style.left = Math.random() * 100 + '%';
+                sparkle.style.top = Math.random() * 100 + '%';
+                sparkle.style.animationDelay = Math.random() * 3 + 's';
+                sparkle.style.animationDuration = (Math.random() * 2 + 2) + 's';
+                container.appendChild(sparkle);
+            }
+        }
+
+        // Create progress dots
+        function createProgressDots() {
+            for (let i = 1; i <= totalSlides; i++) {
+                const container = document.getElementById(`dots${i}`);
+                if (container) {
+                    container.innerHTML = ''; // Clear existing
+                    for (let j = 1; j <= totalSlides; j++) {
+                        const dot = document.createElement('div');
+                        dot.className = 'dot';
+                        if (j === i) dot.classList.add('active');
+                        container.appendChild(dot);
+                    }
+                }
+            }
+        }
+
+        // Attach event listeners
+        function attachEventListeners() {
+            // Music button
+            if (musicBtn) {
+                musicBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    toggleMusic();
+                });
+            }
+
+            // All action buttons
+            document.querySelectorAll('.btn').forEach(function(btn) {
+                btn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    
+                    const action = this.getAttribute('data-action');
+                    const current = parseInt(this.getAttribute('data-current'));
+                    const next = parseInt(this.getAttribute('data-next'));
+                    
+                    console.log('Button clicked:', action, current);
+                    
+                    if (action === 'play-music') {
+                        playMusic();
+                        if (next) goToSlide(next + 1);
+                    } else if (action === 'next') {
+                        if (current) goToSlide(current + 1);
+                    } else if (action === 'restart') {
+                        goToSlide(1);
+                    }
+                });
+            });
+
+            // Keyboard navigation
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'ArrowRight' && currentSlide < totalSlides) {
+                    goToSlide(currentSlide + 1);
+                } else if (e.key === 'ArrowLeft' && currentSlide > 1) {
+                    goToSlide(currentSlide - 1);
+                } else if (e.key === 'Home') {
+                    goToSlide(1);
+                }
+            });
+        }
+
+        // Navigation function
+        function goToSlide(slideNum) {
+            if (slideNum < 1 || slideNum > totalSlides) return;
+            
+            const currentCard = document.getElementById(`slide${currentSlide}`);
+            const nextCard = document.getElementById(`slide${slideNum}`);
+            
+            if (!nextCard) return;
+            
+            // Animate out current
+            if (currentCard) {
+                currentCard.classList.add('fade-out');
+            }
+            
+            setTimeout(function() {
+                if (currentCard) {
+                    currentCard.classList.remove('active', 'fade-out');
+                }
+                nextCard.classList.add('active');
+                currentSlide = slideNum;
+                updateProgressDots();
+            }, 500);
+        }
+
+        // Update progress dots
+        function updateProgressDots() {
+            document.querySelectorAll('.progress-dots').forEach(function(container, index) {
+                const dots = container.querySelectorAll('.dot');
+                dots.forEach(function(dot, dotIndex) {
+                    dot.classList.toggle('active', dotIndex + 1 === currentSlide);
+                });
+            });
+        }
+
+        // Music Control
+        function toggleMusic() {
+            if (!music) return;
+            
+            if (isPlaying) {
+                music.pause();
+                if (musicIcon) musicIcon.textContent = '🔇';
+                if (musicBtn) musicBtn.classList.remove('playing');
+            } else {
+                playAudio();
+            }
+        }
+
+        function playMusic() {
+            playAudio();
+        }
+
+        function playAudio() {
+            if (!music) return;
+            
+            var playPromise = music.play();
+            
+            if (playPromise !== undefined) {
+                playPromise.then(function() {
+                    if (musicIcon) musicIcon.textContent = '🎵';
+                    if (musicBtn) musicBtn.classList.add('playing');
+                    isPlaying = true;
+                }).catch(function(error) {
+                    console.log('Audio play failed:', error);
+                    if (musicIcon) musicIcon.textContent = '🔇';
+                });
+            }
+        }
+
+        // Backup init
+        if (document.readyState === 'complete' || document.readyState === 'interactive') {
+            setTimeout(init, 1);
+        }
+    </script>
+</body>
+</html>
